@@ -25,6 +25,9 @@ grad_y = cv2.Sobel(gray, ddepth=-1, dx=0, dy=1)  # Получаем градие
 sobel = np.sqrt(grad_x**2 + grad_y**2)  # Это формула Собеля, для объединения двух градиентов по горизонтали и вертикали в один единный градиент
 sobel = sobel/np.max(sobel)  # Нормализируем наши значения. Диапазон 0...1
 
+
+
+#--------------------------------------------------------------------------------------
 # Canny Edge Detector
 # Produces smooth edges by applying Gaussian prefiltering. It also applies double thresholding via hystheresis. The edges are thinned using non-maximum-suppresion.
 
