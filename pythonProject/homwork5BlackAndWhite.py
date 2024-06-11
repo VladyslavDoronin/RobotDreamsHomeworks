@@ -12,9 +12,7 @@ img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 plt.imshow(img)
 plt.show()
 
-# Let's start with gray tones first.
-
-# Black, dark gray, light gray, white
+# Black, white
 colors = np.array([[0, 0, 0],
                    [255, 255, 255]])
 # Using the colour pallette, let's quantize the original image
