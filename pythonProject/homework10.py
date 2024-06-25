@@ -4,8 +4,8 @@ from time import perf_counter
 
 # videoPath = "data/CarFromDrone.mov"
 # videoPath = 'data/ManyCars.mov'
-videoPath = '/home/user/Downloads/Telegram Desktop/1.mp4'
-# videoPath = 0
+# videoPath = '/home/user/Downloads/Telegram Desktop/1.mp4'
+videoPath = 0
 
 current_region = None
 x1, x2, y1, y2 = 0, 0, 0, 0
