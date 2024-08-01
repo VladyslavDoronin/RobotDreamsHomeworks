@@ -3,14 +3,14 @@ import numpy as np
 from PIL import Image
 from pycocotools.coco import COCO
 
-rootPath = "data/Masks/mask_"
+rootPath = "/home/user/Documents/data/Masks/mask_"
 trainType = "train"
 valType = "valid"
 testType = "test"
 # Пути к датасету COCO
-ANNOTATION_FILE_TRAIN = f'../../../data/MilVehicle/{trainType}/_annotations.coco.json'
-ANNOTATION_FILE_VAL = f'../../../data/MilVehicle/{valType}/_annotations.coco.json'
-ANNOTATION_FILE_TEST = f'../../../data/MilVehicle/{testType}/_annotations.coco.json'
+ANNOTATION_FILE_TRAIN = f'/home/user/Documents/data/MilVehicle/{trainType}/_annotations.coco.json'
+ANNOTATION_FILE_VAL = f'/home/user/Documents/data/MilVehicle/{valType}/_annotations.coco.json'
+ANNOTATION_FILE_TEST = f'/home/user/Documents/data/MilVehicle/{testType}/_annotations.coco.json'
 
 
 def generate_masks(coco, output_dir, type):

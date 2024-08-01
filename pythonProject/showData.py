@@ -8,9 +8,9 @@ from tensorflow.keras.preprocessing.image import load_img
 plt.rcParams['figure.figsize'] = [15, 10]
 
 testType = "test"
-ANNOTATION_FILE_TEST = f'../../../data/MilVehicle/{testType}/_annotations.coco.json'
+ANNOTATION_FILE_TEST = f'/home/user/Documents/data/MilVehicle/{testType}/_annotations.coco.json'
 
-root = "data"
+root = "/home/user/Documents/data"
 input_dir_test = os.path.join(root, "MilVehicle/test")
 target_dir_test = os.path.join(root, "Masks/mask_test")
 

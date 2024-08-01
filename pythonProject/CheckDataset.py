@@ -4,10 +4,10 @@ from random import shuffle
 from pycocotools.coco import COCO
 
 # Пути к датасету COCO
-ANNOTATION_FILE_TRAIN = '../../../data/MilVehicle/train/_annotations.coco.json'
-ANNOTATION_FILE_VAL = '../../../data/MilVehicle/valid/_annotations.coco.json'
+ANNOTATION_FILE_TRAIN = '/home/user/Documents/data/MilVehicle/train/_annotations.coco.json'
+ANNOTATION_FILE_VAL = '/home/user/Documents/data/MilVehicle/valid/_annotations.coco.json'
 
-root = "data"
+root = "/home/user/Documents/data"
 input_dir = os.path.join(root, "MilVehicle/train")
 target_dir = os.path.join(root, "Masks/mask_train")
 

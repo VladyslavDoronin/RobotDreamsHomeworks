@@ -7,7 +7,7 @@ from tensorflow.keras.preprocessing.image import load_img
 from CustomDataGenerator import CustomDataGenerator
 
 
-root = "data"
+root = "/home/user/Documents/data"
 input_dir_train = os.path.join(root, "MilVehicle/train")
 target_dir_train = os.path.join(root, "Masks/mask_train")
 
@@ -20,7 +20,7 @@ batch_size = 16
 
 
 # Загрузка модели
-model = load_model('data/final_model.h5')
+model = load_model('/home/user/Documents/data/final_model.h5')
 
 test_generator = CustomDataGenerator(images_path=input_dir_test, masks_path=target_dir_test, batch_size=batch_size)
 test_preds = model.predict(test_generator)
