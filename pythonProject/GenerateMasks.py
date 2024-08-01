@@ -3,13 +3,17 @@ import numpy as np
 from PIL import Image
 from pycocotools.coco import COCO
 
+rootPath = "data/Masks/mask_"
+trainType = "train"
+valType = "valid"
+testType = "test"
 # Пути к датасету COCO
-ANNOTATION_FILE_TRAIN = 'data/DronTech/train/_annotations.coco.json'
-ANNOTATION_FILE_VAL = 'data/DronTech/valid/_annotations.coco.json'
-ANNOTATION_FILE_TEST = 'data/DronTech/test/_annotations.coco.json'
+ANNOTATION_FILE_TRAIN = f'../../../data/MilVehicle/{trainType}/_annotations.coco.json'
+ANNOTATION_FILE_VAL = f'../../../data/MilVehicle/{valType}/_annotations.coco.json'
+ANNOTATION_FILE_TEST = f'../../../data/MilVehicle/{testType}/_annotations.coco.json'
 
 
-def generate_masks(coco, output_dir):
+def generate_masks(coco, output_dir, type):
     # Получение всех категорий
     catIds = coco.getCatIds()
     categories = coco.loadCats(catIds)
@@ -17,7 +21,7 @@ def generate_masks(coco, output_dir):
 
     # Подсчет общего количества изображений
     total_images = len(coco.getImgIds())
-    print(f"Общее количество изображений: {total_images}")
+    print(f"Общее количество изображений {type}: {total_images}")
 
     mask_count = 0  # Счетчик сохраненных масок
 
@@ -29,7 +33,9 @@ def generate_masks(coco, output_dir):
         # Проходимся по каждой картинке определенного класса
         for im in imgDict:
             # Путь куда сохранять маску
-            file_path = os.path.join(output_dir, im['file_name'])
+            # file_path = os.path.join(output_dir + type, im['file_name'])
+            filename_without_ext = os.path.splitext(im['file_name'])[0]
+            file_path = os.path.join(output_dir + type, filename_without_ext + ".png")
 
             # Получаем айди аннотаций
             annIds = coco.getAnnIds(imgIds=[im['id']], catIds=[cat_id])
@@ -69,17 +75,14 @@ coco_val = COCO(ANNOTATION_FILE_VAL)
 coco_test = COCO(ANNOTATION_FILE_TEST)
 
 # Генерация масок для train
-mask_count_train = generate_masks(coco_train,
-                                  "/home/user/Documents/GitHub/RobotDreamsHomeworks/pythonProject/data/Masks/mask_train")
+mask_count_train = generate_masks(coco_train, rootPath, trainType)
 
 # Генерация масок для val
-mask_count_val = generate_masks(coco_val,
-                                "/home/user/Documents/GitHub/RobotDreamsHomeworks/pythonProject/data/Masks/mask_val")
+mask_count_val = generate_masks(coco_val, rootPath, valType)
 
 # Генерация масок для val
-mask_count_test= generate_masks(coco_test,
-                                "/home/user/Documents/GitHub/RobotDreamsHomeworks/pythonProject/data/Masks/mask_test")
+mask_count_test= generate_masks(coco_test, rootPath, testType)
 
 print(f"Общее количество mask_train: {mask_count_train}")
+print(f"Общее количество mask_valid: {mask_count_val}")
 print(f"Общее количество mask_train: {mask_count_test}")
-print(f"Общее количество mask_val: {mask_count_val}")

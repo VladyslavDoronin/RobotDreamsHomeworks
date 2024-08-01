@@ -171,26 +171,26 @@ callbacks = [keras.callbacks.ModelCheckpoint("oxford_segmentation.keras", save_b
 
 # Train the model, doing validation at the end of each epoch.
 epochs = 15
-model.fit(train_gen, epochs=epochs, validation_data=val_gen, callbacks=callbacks)
-# Generate predictions for all images in the validation set
-val_gen = OxfordPets(batch_size, img_size, val_input_img_paths, val_target_img_paths)
-val_preds = model.predict(val_gen)
-
-# Evaluation
-idx = 20
-
-mask = np.argmax(val_preds[idx], axis=-1)
-mask = np.expand_dims(mask, axis=-1)
-
-x = load_img(val_input_img_paths[idx])
-y_true = load_img(val_target_img_paths[idx])
-y_true = (np.array(y_true) - 1.0)/2
-
-rows, cols, _ = y_true.shape
-mask = cv2.resize(mask.astype(np.uint8), (cols, rows))
-
-plt.subplot(131), plt.imshow(x)
-plt.subplot(132), plt.imshow(y_true)
-plt.subplot(133), plt.imshow(mask, cmap='gray')
-plt.show()
+# model.fit(train_gen, epochs=epochs, validation_data=val_gen, callbacks=callbacks)
+# # Generate predictions for all images in the validation set
+# val_gen = OxfordPets(batch_size, img_size, val_input_img_paths, val_target_img_paths)
+# val_preds = model.predict(val_gen)
+#
+# # Evaluation
+# idx = 20
+#
+# mask = np.argmax(val_preds[idx], axis=-1)
+# mask = np.expand_dims(mask, axis=-1)
+#
+# x = load_img(val_input_img_paths[idx])
+# y_true = load_img(val_target_img_paths[idx])
+# y_true = (np.array(y_true) - 1.0)/2
+#
+# rows, cols, _ = y_true.shape
+# mask = cv2.resize(mask.astype(np.uint8), (cols, rows))
+#
+# plt.subplot(131), plt.imshow(x)
+# plt.subplot(132), plt.imshow(y_true)
+# plt.subplot(133), plt.imshow(mask, cmap='gray')
+# plt.show()
 

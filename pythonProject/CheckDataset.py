@@ -1,10 +1,26 @@
+import os
 import matplotlib.pyplot as plt
 from random import shuffle
 from pycocotools.coco import COCO
 
 # Пути к датасету COCO
-ANNOTATION_FILE_TRAIN = 'data/DronTech/train/_annotations.coco.json'
-ANNOTATION_FILE_VAL = 'data/DronTech/valid/_annotations.coco.json'
+ANNOTATION_FILE_TRAIN = '../../../data/MilVehicle/train/_annotations.coco.json'
+ANNOTATION_FILE_VAL = '../../../data/MilVehicle/valid/_annotations.coco.json'
+
+root = "data"
+input_dir = os.path.join(root, "MilVehicle/train")
+target_dir = os.path.join(root, "Masks/mask_train")
+
+input_img_paths = [f for f in os.listdir(input_dir) if f.endswith(".jpg")]
+input_img_paths = sorted([os.path.join(input_dir, fname) for fname in input_img_paths])
+
+target_img_paths = [f for f in os.listdir(target_dir) if f.endswith(".png") and not f.startswith("_")]
+target_img_paths = sorted([os.path.join(target_dir, f) for f in target_img_paths])
+
+print(len(input_img_paths))
+print(len(target_img_paths))
+assert len(input_img_paths) == len(target_img_paths)
+print("Number of samples:", len(input_img_paths))
 
 # Создание объекта COCO train
 coco_train = COCO(ANNOTATION_FILE_TRAIN)
