@@ -38,26 +38,77 @@ batch_size = 16
 
 # Построение модели сегментации
 def build_unet_model(input_shape):
-    inputs = Input(shape=input_shape)
+    # inputs = layers.Input(shape=input_shape)
+    #
+    # ### [First half of the network: downsampling inputs] ###
+    #
+    # # Entry block
+    # x = layers.Conv2D(32, 3, strides=2, padding="same")(inputs)
+    # x = layers.BatchNormalization()(x)
+    # x = layers.Activation("relu")(x)
+    #
+    # previous_block_activation = x  # Set aside residual
+    #
+    # # Blocks 1, 2, 3 are identical apart from the feature depth.
+    # for filters in [64, 128, 256, 512]:
+    #     x = layers.Activation("relu")(x)
+    #     x = layers.Conv2D(filters, 3, padding="same")(x)
+    #     x = layers.BatchNormalization()(x)
+    #
+    #     x = layers.Activation("relu")(x)
+    #     x = layers.Conv2D(filters, 3, padding="same")(x)
+    #     x = layers.BatchNormalization()(x)
+    #
+    #     x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
+    #
+    #     # Project residual
+    #     residual = layers.Conv2D(filters, 1, strides=2, padding="same")(
+    #         previous_block_activation
+    #     )
+    #     x = layers.add([x, residual])  # Add back residual
+    #     previous_block_activation = x  # Set aside next residual
+    #
+    # ### [Second half of the network: upsampling inputs] ###
+    #
+    # for filters in [512, 256, 128, 64, 32]:
+    #     x = layers.Activation("relu")(x)
+    #     x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
+    #     x = layers.BatchNormalization()(x)
+    #
+    #     x = layers.Activation("relu")(x)
+    #     x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
+    #     x = layers.BatchNormalization()(x)
+    #
+    #     x = layers.UpSampling2D(2)(x)
+    #
+    #     # Project residual
+    #     residual = layers.UpSampling2D(2)(previous_block_activation)
+    #     residual = layers.Conv2D(filters, 1, padding="same")(residual)
+    #     x = layers.add([x, residual])  # Add back residual
+    #     previous_block_activation = x  # Set aside next residual
+    #
+    # # Add a per-pixel classification layer
+    # outputs = layers.Conv2D(2, 3, activation="softmax", padding="same")(x)
+    inputs = Input(shape=(128,128) + (3,))
 
     c1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
     c1 = Conv2D(64, (3, 3), activation='relu', padding='same')(c1)
-    # c1 = layers.BatchNormalization()(c1)
+    c1 = layers.BatchNormalization()(c1)
     p1 = MaxPooling2D((2, 2))(c1)
 
     c2 = Conv2D(128, (3, 3), activation='relu', padding='same')(p1)
     c2 = Conv2D(128, (3, 3), activation='relu', padding='same')(c2)
-    # c2 = layers.BatchNormalization()(c2)
+    c2 = layers.BatchNormalization()(c2)
     p2 = MaxPooling2D((2, 2))(c2)
 
     c3 = Conv2D(256, (3, 3), activation='relu', padding='same')(p2)
     c3 = Conv2D(256, (3, 3), activation='relu', padding='same')(c3)
-    # c3 = layers.BatchNormalization()(c3)
+    c3 = layers.BatchNormalization()(c3)
     p3 = MaxPooling2D((2, 2))(c3)
 
     c4 = Conv2D(512, (3, 3), activation='relu', padding='same')(p3)
     c4 = Conv2D(512, (3, 3), activation='relu', padding='same')(c4)
-    # c4 = layers.BatchNormalization()(c4)
+    c4 = layers.BatchNormalization()(c4)
     p4 = MaxPooling2D((2, 2))(c4)
 
     c5 = Conv2D(1024, (3, 3), activation='relu', padding='same')(p4)
@@ -86,8 +137,8 @@ def build_unet_model(input_shape):
     c9 = Conv2D(64, (3, 3), activation='relu', padding='same')(u9)
     c9 = Conv2D(64, (3, 3), activation='relu', padding='same')(c9)
 
-    outputs = Conv2D(1, 1, activation='sigmoid', padding="same")(c9)
-    # outputs = Conv2D(1, 1, activation='sigmoid')(c9)
+    # outputs = Conv2D(1, 1, activation='sigmoid', padding="same")(c9)
+    outputs = layers.Conv2D(2, 3, activation="softmax", padding="same")(c9)
 
     # outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
 
@@ -104,7 +155,7 @@ plot_model(model, show_shapes=True)
 plt.show()
 
 # Компиляция модели
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 # model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
 callbacks = [keras.callbacks.ModelCheckpoint("unetSegmentation.keras", save_best_only=True)]
@@ -125,10 +176,12 @@ valid_generator_tank = CustomDataGenerator(images_path=input_dir_valid, masks_pa
 # images, tank_masks = load_data(image_folder, annotation_file, class_ids[0])
 # _, btr_masks = load_data(image_folder, annotation_file, class_ids[1])
 # _, bus_masks = load_data(image_folder, annotation_file, class_ids[2])
-
+# Fetch a batch of data to ensure it works
+X, y = train_generator_tank.__getitem__(0)
+print(f'X shape: {X.shape}, y shape: {y.shape}')
 # Train the model, doing validation at the end of each epoch.
-epochs = 15
-model.fit(train_generator_tank, epochs=epochs, validation_data=valid_generator_tank, callbacks=callbacks)
+epochs = 450
+history = model.fit(train_generator_tank, epochs=epochs, validation_data=valid_generator_tank, callbacks=callbacks)
 
 def plot_history(history):
     h = history.history
@@ -145,7 +198,8 @@ def plot_history(history):
     print('Validation Acc', h['val_accuracy'][-1])
 
 
-plot_history(model)
+plot_history(history)
+plt.show()
 
 test_generator_tank = CustomDataGenerator(images_path=input_dir_test, masks_path=target_dir_test, img_size=(128, 128),
                                           annotation_file=ANNOTATION_FILE_TEST, class_id=class_ids[1],
@@ -166,9 +220,9 @@ maskTrue = cv2.imread(test_generator_tank.mask_files[idx])
 rows, cols, _ = maskTrue.shape
 mask = cv2.resize(mask.astype(np.uint8), (cols, rows))
 
-plt.subplot(121), plt.imshow(img)
-plt.subplot(122), plt.imshow(maskTrue/255)
-plt.subplot(133), plt.imshow(mask, cmap='gray')
+plt.subplot(131), plt.imshow(img)
+plt.subplot(132), plt.imshow(maskTrue/255)
+plt.subplot(133), plt.imshow(mask/255*50, cmap='gray')
 plt.show()
 
 #

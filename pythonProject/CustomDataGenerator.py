@@ -33,6 +33,13 @@ class CustomDataGenerator(Sequence):
         # self.mask_files = [f for f in os.listdir(masks_path) if f.endswith(".png") and not f.startswith("_")]
         # self.mask_files = [os.path.splitext(file)[0] + '.png' for file in self.image_files]
         self.mask_files = self.get_mask_files()
+        self.mask_files = sorted([os.path.join(masks_path, fname) for fname in self.mask_files])
+
+        print(len(self.image_files), ": ")
+        print(self.image_files)
+        print(len(self.mask_files), ": ")
+        print(self.mask_files)
+
 
         # self.mask_files = sorted([os.path.join(masks_path, fname) for fname in self.mask_files])
         self.indices = np.arange(len(self.image_files))
@@ -57,12 +64,12 @@ class CustomDataGenerator(Sequence):
         images, masks = self.__data_generation(batch_image_files, batch_mask_files)
         return images, masks
 
-    def on_epoch_end(self):
-        if self.shuffle:
-            indices = np.arange(len(self.image_files))
-            np.random.shuffle(indices)
-            self.image_files = [self.image_files[i] for i in indices]
-            self.mask_files = [self.mask_files[i] for i in indices]
+    # def on_epoch_end(self):
+    #     if self.shuffle:
+    #         indices = np.arange(len(self.image_files))
+    #         np.random.shuffle(indices)
+    #         self.image_files = [self.image_files[i] for i in indices]
+    #         self.mask_files = [self.mask_files[i] for i in indices]
     # def __getitem__(self, index):
     #     image_ids = self.coco.getImgIds(catIds=self.class_id)
     #     batch_indices = self.indices[index * self.batch_size:(index + 1) * self.batch_size]
