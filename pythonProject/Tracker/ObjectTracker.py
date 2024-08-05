@@ -28,6 +28,8 @@ class VideoTracker:
         self.contour_thickness = 1
 
         # self.model = load_model('C:\\Users\\Alex\\Downloads\\unetSegmentation.keras')
+        # Файлик не коммичу на гитхаб Силшком много весит. Этот файлик можно получить тут
+        # https://drive.google.com/file/d/1X5lq5kUzBdhq_ntEud91zUFLd_w8qWLV/view?usp=sharing
         self.model = load_model('NeuralNetwork/TrainResults/unetSegmentation.keras')
 
         cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)  # ДАем название окну куда выводить видео и инициализируем это окно

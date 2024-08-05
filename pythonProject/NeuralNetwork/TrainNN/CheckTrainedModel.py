@@ -15,6 +15,8 @@ new_image_array = img_to_array(new_image) / 255.0  # Нормализуем ка
 new_image_array = np.expand_dims(new_image_array, axis=0)
 
 # Загружаем нашу обученную модель
+# Файлик не коммичу на гитхаб Силшком много весит. Этот файлик можно получить тут
+# https://drive.google.com/file/d/1X5lq5kUzBdhq_ntEud91zUFLd_w8qWLV/view?usp=sharing
 model = load_model('NeuralNetwork/TrainResults/unetSegmentation.keras')
 
 # Пытаемся найти объект для сегментации, Делаем предсказание
