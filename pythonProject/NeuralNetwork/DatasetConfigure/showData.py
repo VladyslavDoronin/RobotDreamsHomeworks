@@ -1,9 +1,7 @@
 import os
 import cv2
-import numpy as np
 from matplotlib import pyplot as plt
-from CustomDataGenerator import CustomDataGenerator
-from tensorflow.keras.preprocessing.image import load_img
+from NeuralNetwork.TrainNN.CustomDataGenerator import CustomDataGenerator
 
 plt.rcParams['figure.figsize'] = [15, 10]
 

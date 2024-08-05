@@ -1,3 +1,15 @@
+# Этот файлик обучает модель для сегментирования объектов. В данном случае только танков.
+# Но как можно будет увидеть, тут есть е 2 класса. Но пока обучал на 1. Много времени занимает
+# За основу для написание данного кода взят пример от сюда https://www.kaggle.com/code/armanasgharpoor1993/coco-image-segmentation
+# Датасет взят от сюда https://universe.roboflow.com/testingdetection/drontech
+# Не очень удачный датасет и маленький и много повторяющихся фоток. Но это пока самый лучший,
+# который нашел с данными для сегментации для интересующей меня темы. Наверное нужно будет самому делать собственный датасет
+# Не смотря, на повторяющиеся фотки, с помощью робофлой сделал дополнительную аугументацию, что увелчило датасет в 3 раза
+# Сначала проверял на 15 епохах, пока не увидел что появился хоть какой-то результат.
+# Потом пробовал на 1000 и на 500+ епохе комп завис))) Поэтому и решил что 450 епох будет в самый раз.
+# 450 епох выполнялось примерно 18-20 часов. Поэтому что-то улучшать не решился
+# Результаты тренировки, акураси, наложение маски на тренировочный датасет, или на вообще левую фотку указаны в папке NeuralNetwork/TrainResults
+
 import os
 import cv2
 import numpy as np
@@ -6,10 +18,8 @@ from tensorflow.keras import layers
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Concatenate
 from tensorflow.keras import Model
 from tensorflow.keras.utils import plot_model
-from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 from CustomDataGenerator import CustomDataGenerator
-from tensorflow.keras.preprocessing.image import load_img
 
 plt.rcParams['figure.figsize'] = [15, 10]
 trainType = "train"
@@ -38,58 +48,7 @@ batch_size = 16
 
 # Построение модели сегментации
 def build_unet_model(input_shape):
-    # inputs = layers.Input(shape=input_shape)
-    #
-    # ### [First half of the network: downsampling inputs] ###
-    #
-    # # Entry block
-    # x = layers.Conv2D(32, 3, strides=2, padding="same")(inputs)
-    # x = layers.BatchNormalization()(x)
-    # x = layers.Activation("relu")(x)
-    #
-    # previous_block_activation = x  # Set aside residual
-    #
-    # # Blocks 1, 2, 3 are identical apart from the feature depth.
-    # for filters in [64, 128, 256, 512]:
-    #     x = layers.Activation("relu")(x)
-    #     x = layers.Conv2D(filters, 3, padding="same")(x)
-    #     x = layers.BatchNormalization()(x)
-    #
-    #     x = layers.Activation("relu")(x)
-    #     x = layers.Conv2D(filters, 3, padding="same")(x)
-    #     x = layers.BatchNormalization()(x)
-    #
-    #     x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
-    #
-    #     # Project residual
-    #     residual = layers.Conv2D(filters, 1, strides=2, padding="same")(
-    #         previous_block_activation
-    #     )
-    #     x = layers.add([x, residual])  # Add back residual
-    #     previous_block_activation = x  # Set aside next residual
-    #
-    # ### [Second half of the network: upsampling inputs] ###
-    #
-    # for filters in [512, 256, 128, 64, 32]:
-    #     x = layers.Activation("relu")(x)
-    #     x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-    #     x = layers.BatchNormalization()(x)
-    #
-    #     x = layers.Activation("relu")(x)
-    #     x = layers.Conv2DTranspose(filters, 3, padding="same")(x)
-    #     x = layers.BatchNormalization()(x)
-    #
-    #     x = layers.UpSampling2D(2)(x)
-    #
-    #     # Project residual
-    #     residual = layers.UpSampling2D(2)(previous_block_activation)
-    #     residual = layers.Conv2D(filters, 1, padding="same")(residual)
-    #     x = layers.add([x, residual])  # Add back residual
-    #     previous_block_activation = x  # Set aside next residual
-    #
-    # # Add a per-pixel classification layer
-    # outputs = layers.Conv2D(2, 3, activation="softmax", padding="same")(x)
-    inputs = Input(shape=(128,128) + (3,))
+    inputs = Input(shape=input_shape)
 
     c1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
     c1 = Conv2D(64, (3, 3), activation='relu', padding='same')(c1)
@@ -115,7 +74,6 @@ def build_unet_model(input_shape):
     c5 = Conv2D(1024, (3, 3), activation='relu', padding='same')(c5)
     c5 = layers.BatchNormalization()(c5)
 
-
     u6 = UpSampling2D((2, 2))(c5)
     u6 = Concatenate()([u6, c4])
     c6 = Conv2D(512, (3, 3), activation='relu', padding='same')(u6)
@@ -125,7 +83,6 @@ def build_unet_model(input_shape):
     u7 = Concatenate()([u7, c3])
     c7 = Conv2D(256, (3, 3), activation='relu', padding='same')(u7)
     c7 = Conv2D(256, (3, 3), activation='relu', padding='same')(c7)
-
 
     u8 = UpSampling2D((2, 2))(c7)
     u8 = Concatenate()([u8, c2])
@@ -138,6 +95,7 @@ def build_unet_model(input_shape):
     c9 = Conv2D(64, (3, 3), activation='relu', padding='same')(c9)
 
     # outputs = Conv2D(1, 1, activation='sigmoid', padding="same")(c9)
+    # У меня по сути есть 2 класса, это черный фон и белый выделенный объект(маска). Ну и крнелсайз 3х3
     outputs = layers.Conv2D(2, 3, activation="softmax", padding="same")(c9)
 
     # outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
@@ -149,38 +107,43 @@ def build_unet_model(input_shape):
 
 # input_shape = (640, 480, 3)
 input_shape = (128, 128, 3)
+# Строим нашу модель для обучения
 model = build_unet_model(input_shape)
+# Выводим таблицу какие будут проходить етапы обучалки, какие конволюции и тд будут накладываться
 model.summary()
 plot_model(model, show_shapes=True)
 plt.show()
 
-# Компиляция модели
+# Компиляция модели. Нужен лишь 1 результат поэтому sparse_categorical_crossentropy. adam - самы надежный, сказал Ян
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 # model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
+# Сохраняем обучение в файлик
 callbacks = [keras.callbacks.ModelCheckpoint("unetSegmentation.keras", save_best_only=True)]
 
-# Создание генераторов данных для обучения и валидации
-# train_generator = CustomDataGenerator(input_dir_train, target_dir_train, 8)
+# Создание генераторов данных для обучения и валидации. В данном случае только танков class_ids[1]
 train_generator_tank = CustomDataGenerator(images_path=input_dir_train, masks_path=target_dir_train, img_size=(128, 128),
                                           annotation_file=ANNOTATION_FILE_TRAIN, class_id=class_ids[1],
                                           batch_size=batch_size, shuffle=True)
-# train_generator_tank = CustomDataGenerator(images_path=input_dir_train, masks_path=target_dir_train, annotation_file=ANNOTATION_FILE_TRAIN, class_id=class_ids[1], batch_size=batch_size)
+
 
 valid_generator_tank = CustomDataGenerator(images_path=input_dir_valid, masks_path=target_dir_valid,
                                            img_size=(128, 128),
                                            annotation_file=ANNOTATION_FILE_VAL, class_id=class_ids[1],
                                            batch_size=batch_size, shuffle=True)
+
 # valid_generator_tank = CustomDataGenerator(images_path=input_dir_valid, masks_path=target_dir_valid, annotation_file=ANNOTATION_FILE_VAL, class_id=class_ids[1], batch_size=batch_size)
 # Загрузка данных для каждого класса
 # images, tank_masks = load_data(image_folder, annotation_file, class_ids[0])
 # _, btr_masks = load_data(image_folder, annotation_file, class_ids[1])
 # _, bus_masks = load_data(image_folder, annotation_file, class_ids[2])
 # Fetch a batch of data to ensure it works
-X, y = train_generator_tank.__getitem__(0)
-print(f'X shape: {X.shape}, y shape: {y.shape}')
+
+# X, y = train_generator_tank.__getitem__(0)
+# print(f'X shape: {X.shape}, y shape: {y.shape}')
 # Train the model, doing validation at the end of each epoch.
 epochs = 450
+# Начинаем обучалку
 history = model.fit(train_generator_tank, epochs=epochs, validation_data=valid_generator_tank, callbacks=callbacks)
 
 def plot_history(history):
@@ -197,18 +160,20 @@ def plot_history(history):
     print('Train Acc     ', h['accuracy'][-1])
     print('Validation Acc', h['val_accuracy'][-1])
 
-
+# Выводим результат обучения всех епох на график. Результат сохранил сюда NeuralNetwork/TrainResults/Accuracy.png
 plot_history(history)
 plt.show()
 
+# Создаем генератор тестового датасета
 test_generator_tank = CustomDataGenerator(images_path=input_dir_test, masks_path=target_dir_test, img_size=(128, 128),
                                           annotation_file=ANNOTATION_FILE_TEST, class_id=class_ids[1],
                                           batch_size=batch_size, shuffle=True)
-# test_generator_tank = CustomDataGenerator(images_path=input_dir_test, masks_path=target_dir_test, annotation_file=ANNOTATION_FILE_TRAIN, class_id=class_ids[1], batch_size=batch_size)
+# Пробуем пресказать, найти сегментацию на этом датасете
 test_preds = model.predict(test_generator_tank)
 
 idx = 2
 
+# Обрабатываем предсказание дла наложения маски
 mask = np.argmax(test_preds[idx], axis=-1)
 mask = np.expand_dims(mask, axis=-1)
 
@@ -220,6 +185,8 @@ maskTrue = cv2.imread(test_generator_tank.mask_files[idx])
 rows, cols, _ = maskTrue.shape
 mask = cv2.resize(mask.astype(np.uint8), (cols, rows))
 
+# Сверяем результаты. ВЫвожу исходную картинку, ее маску и результат нейронки
+# Результат сохранил сюда NeuralNetwork/TrainResults/ResultOfTrainingModel.png
 plt.subplot(131), plt.imshow(img)
 plt.subplot(132), plt.imshow(maskTrue/255)
 plt.subplot(133), plt.imshow(mask/255*50, cmap='gray')

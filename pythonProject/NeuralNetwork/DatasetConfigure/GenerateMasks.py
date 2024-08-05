@@ -1,3 +1,7 @@
+# Этот файлки создан для создания сегментаций картинок на основе данных из _annotations.coco.json
+# В файлике есть поля segmentation имеющие координаты выделенного объекта для каждой фотки
+# Создаем картинку такую же по размерам чернобелую, где черный это фон, а белый этой маска. И сохраняемв папку
+
 import os
 import numpy as np
 from PIL import Image
@@ -81,7 +85,7 @@ mask_count_train = generate_masks(coco_train, rootPath, trainType)
 mask_count_val = generate_masks(coco_val, rootPath, valType)
 
 # Генерация масок для val
-mask_count_test= generate_masks(coco_test, rootPath, testType)
+mask_count_test = generate_masks(coco_test, rootPath, testType)
 
 print(f"Общее количество mask_train: {mask_count_train}")
 print(f"Общее количество mask_valid: {mask_count_val}")
